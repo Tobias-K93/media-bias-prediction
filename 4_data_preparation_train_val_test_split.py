@@ -5,41 +5,42 @@ import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
 
 ############################
-### choosing split ratio ##
-split_ratio = (60,20,20)  ##
+### choosing split ratio ###
+split_ratio = (80,10,10) ###
 ############################
+affix = '' # '_duplicates_removed' # affix = '_%i_%i_%i'%split_ratio # _sun_cut
 
 ### loading tensors
-contents_text_tensor = torch.load('contents_text_tensor_source_removed.pt')
-contents_mask_tensor = torch.load('contents_mask_tensor_source_removed.pt')
+contents_text_tensor = torch.load(f'contents_text_tensor{affix}.pt')
+contents_mask_tensor = torch.load(f'contents_mask_tensor{affix}.pt')
 
-titles_text_tensor = torch.load('titles_text_tensor.pt')
-titles_mask_tensor = torch.load('titles_mask_tensor.pt')
+# titles_text_tensor = torch.load('titles_text_tensor.pt')
+# titles_mask_tensor = torch.load('titles_mask_tensor.pt')
 
 bias_tensor = torch.load('bias_tensor.pt')
 ### loading date and source
-data = pd.read_csv('/home/tobias/Documents/Studium/Master_thesis/programming/data_short.csv')
-data.drop(columns=['name', 'content', 'bias'],inplace=True)
+# data = pd.read_csv('/home/tobias/Documents/Studium/Master_thesis/programming/data_short.csv')
+# data.drop(columns=['name', 'content', 'bias'],inplace=True)
 
-### Converting source to id array with dict ###
-source_array = np.array(data['source']).reshape((-1,1))
-# initilizing encoder and convert source array
-source_encoder = OrdinalEncoder(dtype=np.int8)
-source_encoder.fit(source_array)
-source_transformed = source_encoder.transform(source_array)
-# create dictionary for later 
-source_dict = {}
-for i,source in enumerate(source_encoder.categories_[0]):
-    source_dict[source] = i
+# ### Converting source to id array with dict ###
+# source_array = np.array(data['source']).reshape((-1,1))
+# # initilizing encoder and convert source array
+# source_encoder = OrdinalEncoder(dtype=np.int8)
+# source_encoder.fit(source_array)
+# source_transformed = source_encoder.transform(source_array)
+# # create dictionary for later 
+# source_dict = {}
+# for i,source in enumerate(source_encoder.categories_[0]):
+#     source_dict[source] = i
 
-source_dict_inverse = {}
-for i,source in enumerate(source_encoder.categories_[0]):
-    source_dict_inverse[i] = source
+# source_dict_inverse = {}
+# for i,source in enumerate(source_encoder.categories_[0]):
+#     source_dict_inverse[i] = source
 
 # list of tensors that need to be modified, devided into sets, and saved
-tensor_list = [contents_text_tensor, contents_mask_tensor, 
-               titles_text_tensor, titles_mask_tensor, 
-               bias_tensor, source_transformed]
+tensor_list = [contents_text_tensor, contents_mask_tensor]#, 
+            #    titles_text_tensor, titles_mask_tensor, 
+            #    bias_tensor, source_transformed]
 
 ###############################################
 # ### Reducing articles by 'The Sun' from 42296 to 20000
@@ -79,8 +80,8 @@ val_ids = ids[train_val_cut:val_test_cut]
 test_ids = ids[val_test_cut:]
 
 ### creating train- val- test-sets
-tensor_file_names = ['contents_text', 'contents_mask', # ['contents_text_source_removed', 'contents_mask_source_removed',
-                     'titles_text', 'titles_mask', 'bias', 'source']
+tensor_file_names = ['contents_text', 'contents_mask']#, # ['contents_text_source_removed', 'contents_mask_source_removed',
+                    #  'titles_text', 'titles_mask', 'bias', 'source']
 train_tensors = []
 for tensor in tensor_list:
     train_tensors.append(tensor[train_ids])
@@ -95,7 +96,7 @@ for tensor in tensor_list:
 
 ### saving tensors
 
-affix = '_%i_%i_%i'%split_ratio # _sun_cut
+
 
 path = '/home/tobias/Documents/Studium/Master_thesis/programming/ready_to_use/'
 
