@@ -1,1 +1,3 @@
-# media-bias-prediction
+# Predicting media bias of news articles using deep-learning
+
+still under construction...
