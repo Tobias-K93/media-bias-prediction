@@ -3,27 +3,31 @@ import torch
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
-
+import os
 ############################
 ### choosing split ratio ###
 split_ratio = (80,10,10) ###
-############################
-affix = '' # '_duplicates_removed' # affix = '_%i_%i_%i'%split_ratio # _sun_cut
+########################################
+affix = 'allsides' # '_duplicates_removed' # affix = '_%i_%i_%i'%split_ratio # _sun_cut
+########################################
+os.chdir('/home/tobias/Documents/Studium/Master_thesis/programming/allsides')
 
 ### loading tensors
-contents_text_tensor = torch.load(f'contents_text_tensor{affix}.pt')
-contents_mask_tensor = torch.load(f'contents_mask_tensor{affix}.pt')
+contents_text_tensor = torch.load(f'{affix}_contents_text_tensor.pt')
+contents_mask_tensor = torch.load(f'{affix}_contents_mask_tensor.pt')
 
-# titles_text_tensor = torch.load('titles_text_tensor.pt')
-# titles_mask_tensor = torch.load('titles_mask_tensor.pt')
+titles_text_tensor = torch.load(f'{affix}_titles_text_tensor.pt')
+titles_mask_tensor = torch.load(f'{affix}_titles_mask_tensor.pt')
 
-bias_tensor = torch.load('bias_tensor.pt')
+# bias_tensor = torch.load(f'{affix}_bias_tensor.pt')
 ### loading date and source
-# data = pd.read_csv('/home/tobias/Documents/Studium/Master_thesis/programming/data_short.csv')
+# data = pd.read_csv('/home/tobias/Documents/Studium/Master_thesis/programming/'
+#                     'mbfc_full/mbfc_full_data_short.csv')
 # data.drop(columns=['name', 'content', 'bias'],inplace=True)
 
 # ### Converting source to id array with dict ###
 # source_array = np.array(data['source']).reshape((-1,1))
+
 # # initilizing encoder and convert source array
 # source_encoder = OrdinalEncoder(dtype=np.int8)
 # source_encoder.fit(source_array)
@@ -38,9 +42,9 @@ bias_tensor = torch.load('bias_tensor.pt')
 #     source_dict_inverse[i] = source
 
 # list of tensors that need to be modified, devided into sets, and saved
-tensor_list = [contents_text_tensor, contents_mask_tensor]#, 
-            #    titles_text_tensor, titles_mask_tensor, 
-            #    bias_tensor, source_transformed]
+tensor_list = [titles_text_tensor, titles_mask_tensor] #, 
+            #    contents_text_tensor, contents_mask_tensor
+            #    bias_tensor, source_array]
 
 ###############################################
 # ### Reducing articles by 'The Sun' from 42296 to 20000
@@ -67,7 +71,7 @@ tensor_list = [contents_text_tensor, contents_mask_tensor]#,
 
 ### creating id vectors
 np.random.seed(123)
-data_length = len(bias_tensor) #len(tensor_cut_sun_list[0])
+data_length = len(contents_text_tensor) #len(tensor_cut_sun_list[0])
 
 ids = np.arange(data_length)
 np.random.shuffle(ids) 
@@ -80,8 +84,9 @@ val_ids = ids[train_val_cut:val_test_cut]
 test_ids = ids[val_test_cut:]
 
 ### creating train- val- test-sets
-tensor_file_names = ['contents_text', 'contents_mask']#, # ['contents_text_source_removed', 'contents_mask_source_removed',
-                    #  'titles_text', 'titles_mask', 'bias', 'source']
+tensor_file_names = ['titles_text', 'titles_mask']#, # ['contents_text_source_removed', 'contents_mask_source_removed',
+                    #  ,'contents_text', 'contents_mask' 
+                    #  'bias', 'source']
 train_tensors = []
 for tensor in tensor_list:
     train_tensors.append(tensor[train_ids])
@@ -95,26 +100,23 @@ for tensor in tensor_list:
     test_tensors.append(tensor[test_ids])
 
 ### saving tensors
-
-
-
-path = '/home/tobias/Documents/Studium/Master_thesis/programming/ready_to_use/'
+path = '/home/tobias/Documents/Studium/Master_thesis/programming/allsides/'
 
 for tensor,name in zip(train_tensors,tensor_file_names):
     if name == 'source':
-        np.save(path + name + affix + '_train.npy', tensor)
+        np.save(path + affix + '_' + name + '_train.npy', tensor)
     else:
-        torch.save(tensor, path + name + affix + '_train.pt')
+        torch.save(tensor, path + affix + '_' + name + '_train.pt')
 
 for tensor,name in zip(val_tensors,tensor_file_names):
     if name == 'source':
-        np.save(path + name + affix +'_val.npy', tensor)
+        np.save(path + affix + '_' + name +'_val.npy', tensor)
     else:
-        torch.save(tensor, path + name + affix + '_val.pt')
+        torch.save(tensor, path + affix + '_' + name + '_val.pt')
 
 for tensor,name in zip(test_tensors,tensor_file_names):
     if name == 'source':
-        np.save(path + name + affix +'_test.npy', tensor)
+        np.save(path + affix + '_' + name +'_test.npy', tensor)
     else:
-        torch.save(tensor, path + name + affix + '_test.pt')
+        torch.save(tensor, path + affix + '_' + name + '_test.pt')
 

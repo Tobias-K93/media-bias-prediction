@@ -2,6 +2,7 @@
 import time
 import csv
 import re
+import os 
 from html.parser import HTMLParser
 import numpy as np
 import pandas as pd
@@ -9,23 +10,29 @@ import matplotlib.pyplot as plt
 import transformers
 import torch
 from nltk.tokenize import sent_tokenize
-import gc
 
 #######################################
-removing_duplicate_sentences = False ###
+removing_duplicate_sentences = True  #
 #######################################
+affix = 'allsides' ###
+#########################################################################
+# bias_dict = {'extreme_left': 0, 'left_bias': 1, 'left_center_bias': 2,  #
+#              'least_biased': 3, 'right_center_bias': 4, 'right_bias': 5,#
+#              'extreme_right': 6}                                        #
+#########################################################################
+os.chdir('/home/tobias/Documents/Studium/Master_thesis/programming/allsides')
 
 # load data
-data = pd.read_csv('bias_articles.csv')
+data = pd.read_csv('allsides_articles.csv')
 
 # create lists of titles and contents
 titles = list(data['name'])
 contents = list(data['content'])
 
-# ID's of entries without title
+# ID's of entries without title (3)
 titles_nans_id = [i for i,item in enumerate(titles) if pd.isna(item)]
 
-# ID's of entries without content 
+# ID's of entries without content (218)
 contents_nans_id = [i for i,item in enumerate(contents) if pd.isna(item)]
 # Sources of articles without content and the corresponding frequencies
 np.unique(data['source'].iloc[contents_nans_id], return_counts=True)
@@ -46,12 +53,12 @@ contents = list(data['content'])
 contents_length = [len(item) for item in contents]
 
 #########################################################################
-### some stats on length in characters
+# ### some stats on length in characters
 # titles_length = [len(item) for item in titles]
 
 # titles_length_max = max(titles_length)
 # titles_length_quantiles = np.quantile(titles_length,[0.25,0.5,0.75])
-# histogram of lengths of titles
+# # histogram of lengths of titles
 # plt.hist(titles_length)
 
 # contents_length_max = max(contents_length)
@@ -94,9 +101,9 @@ contents_length = [len(item) for item in contents]
 # words) contain unwanted and rather rare cases e.g. several whole articles, 
 # that belong to a specific topic, listed as one. 
 
-# 38676 short cut
+# 36910 short cut
 short_cut = np.sum(np.array(contents_length)<500)
-# 1292 long cut
+# 1391 long cut
 long_cut = np.sum(np.array(contents_length)>20000)
 
 contents_unwanted_length_id = [i for i,item in enumerate(contents_length) if item < 500 or item > 20000]
@@ -112,26 +119,30 @@ data.drop(index=contents_unwanted_length_id,inplace=True)
 # reset index
 data.reset_index(drop=True, inplace=True)
 
-##### Saving shortened dataset 
-data.to_csv('data_short.csv', index=False)
-
-###### create target labels vector #####
-bias_dict = {'left': 0, 'center': 1, 'right': 2}
-
-bias_list = [bias_dict[item] for item in data['bias']]
+# ###### create target labels vector #####
+# bias_list = [bias_dict[item] for item in data['bias']]
         
-bias_tensor = torch.tensor(bias_list)
+# bias_tensor = torch.tensor(bias_list)
 
-torch.save(bias_tensor,'bias_tensor.pt')
-# removing saved bias objects
-try:
-    del(bias_list,bias_tensor)
-except NameError:
-    pass
-########################################
+# torch.save(bias_tensor,f'{affix}_bias_tensor.pt')
+
+# # creating counting bias array for full mbfc
+# bias_array = np.array(data['bias'])
+# np.save('mbfc_full_for_counting_bias_array.npy', bias_array)
+
+# # removing saved bias objects
+# try:
+#     del(bias_list,bias_tensor)
+# except NameError:
+#     pass
+# ########################################
 
 # reset titles and contents lists
-del(titles,contents)
+try:
+    del(titles,contents)
+except: 
+    pass
+
 titles = list(data['name'])
 contents = list(data['content'])
 
@@ -149,6 +160,11 @@ contents = [html_parser.unescape(item) for item in contents]
 
 contents = [re.sub(r'http\S+', '', item) for item in contents]
 
+data['name'] = titles
+data['content'] = contents
+
+##### Saving shortened dataset 
+# data.to_csv(f'{affix}_short.csv', index=False)
 
 ### Remove repeating sentences per source
 # sentences - articles - cut
@@ -162,8 +178,29 @@ contents = [re.sub(r'http\S+', '', item) for item in contents]
 # The Daily Mirror 254058 - 12763 - 15
 # Drudge Report 300302 - 17123 - 25
 
+##### Finding examples for sentences #####
+# source_articles = data['content'][data['source']=='Investors Business Daily']
+ 
+# article_sentence_dict = {}
+# for article in source_articles:
+#     article_sentences_list = sent_tokenize(article)    
+#     for sentence in article_sentences_list:
+#         if sentence in article_sentence_dict:
+#             article_sentence_dict[sentence] += 1
+#         else:
+#             article_sentence_dict[sentence] = 1
+
+# duplicate_sentence_count_cut = int(min(max(4,len(source_articles)/500),50))
+
+# article_sentence_dict_selected = {key: value for key, value in article_sentence_dict.items()
+#                                   if value>50 and len(key)>12}
+
+# print(len(source_articles))
+# article_sentence_dict_selected
+##########################################
+
 if removing_duplicate_sentences:
-    affix = '_duplicates_removed'
+    affix += '_duplicates_removed'
 
     data['content'] = contents
     del(contents)
@@ -184,7 +221,7 @@ if removing_duplicate_sentences:
                     article_sentence_dict[sentence] = 1
 
         # choose only those that appear often enough in relation to article corpus 
-        # size and are of a certain length. This assures that commona phrases 
+        # size and are of a certain length. This assures that common phrases 
         # (e.g. "No." "Yes." "Why?" "he added.") are not deleted
         # cut between 4 and 50 repetitions
         duplicate_sentence_count_cut = int(min(max(4,len(source_articles)/500),50))
@@ -213,8 +250,15 @@ if removing_duplicate_sentences:
     except NameError:
         pass
 
-else:
-    affix = ''
+
+# ID's of entries without content (due to repetitive content that was removed)
+nans_id_after_duplicate_removing = [i for i,item in enumerate(contents) if item=='']
+# removing entries with nans 
+#data['content'] = contents
+data.drop(index=nans_id_after_duplicate_removing,inplace=True)
+
+### saving shortened dataset of which duplicates were removed
+data.to_csv(f'{affix}_data_short.csv', index=False)
 
 
 ### Shortening contents to max 4000 characters (for faster tokenization)
@@ -258,19 +302,17 @@ try:
 except NameError:
     pass
 
-# Collecting garbage to (hopefully) free some memory
-#gc.collect()
 
 ### tokenize titles
-# start = time.time()
-# titles_tokenized = [bert_tokenizer.tokenize(item) for item in titles]
-# title_tokenization_time = time.time() - start
-# print('Tokenizing titles took ' + str(title_tokenization_time) + ' sec')
+start = time.time()
+titles_tokenized = [bert_tokenizer.tokenize(item) for item in titles]
+title_tokenization_time = time.time() - start
+print('Tokenizing titles took ' + str(title_tokenization_time) + ' sec')
 
-# ### writing tokenized titles list to csv file
-# with open("titles_tokenized.csv","w", newline='') as f:
-#     wr = csv.writer(f)
-#     wr.writerows(titles_tokenized)
+### writing tokenized titles list to csv file
+with open("titles_tokenized.csv","w", newline='') as f:
+    wr = csv.writer(f)
+    wr.writerows(titles_tokenized)
 
 # ### delete saved titles objects
 # try:
@@ -278,16 +320,16 @@ except NameError:
 # except NameError:
 #     pass
 
-# tokenize contents (~42 min to 72 min)
-start = time.time()
-contents_tokenized = [bert_tokenizer.tokenize(item) for item in contents_short]
-content_tokenization_time = (time.time() - start)/60
-print(f'Tokenizing contents took {content_tokenization_time:.2} min')
+# # tokenize contents (~42 min to 72 min)
+# start = time.time()
+# contents_tokenized = [bert_tokenizer.tokenize(item) for item in contents_short]
+# content_tokenization_time = (time.time() - start)/60
+# print(f'Tokenizing contents took {content_tokenization_time:.2} min')
 
-### writing tokenized contents list to csv file
-with open(f"contents_tokenized{affix}.csv","w", newline='') as f:
-    wr = csv.writer(f)
-    wr.writerows(contents_tokenized)
+# ### writing tokenized contents list to csv file
+# with open(f"{affix}contents_tokenized.csv","w", newline='') as f:
+#     wr = csv.writer(f)
+#     wr.writerows(contents_tokenized)
 
 
 

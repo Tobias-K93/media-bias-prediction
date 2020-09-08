@@ -1,14 +1,16 @@
 ########## Preparing data for BERT ##########
 import time
 import csv
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import transformers
 import torch
-#################################
-affix = ''                    ### '_duplicates_removed'
-#################################
+#####################################
+affix = 'allsides_duplicates_removed'
+#####################################
+os.chdir('/home/tobias/Documents/Studium/Master_thesis/programming/allsides')
 
 # load tokenizer class
 tokenizer_class, pretrained_weights = (transformers.BertTokenizer, 'bert-base-uncased')
@@ -17,24 +19,32 @@ tokenizer_class, pretrained_weights = (transformers.BertTokenizer, 'bert-base-un
 bert_tokenizer = tokenizer_class.from_pretrained(pretrained_weights)
 
 ### reading id files
-# with open("titles_ids.csv", newline='') as f:
+# with open(f"{affix}_titles_ids.csv", newline='') as f:
 #     reader = csv.reader(f)
 #     titles_ids = [[int(item) for item in row] for row in reader]
 
-with open(f"contents_ids{affix}.csv", newline='') as f:
+with open(f"{affix}_contents_ids.csv", newline='') as f:
     reader = csv.reader(f)
     contents_ids = [[int(item) for item in row] for row in reader]
 
-### truncate, pad and add special tokens
-# for titles
-# titles_lengths = [len(item) for item in titles_ids]
+### contents length in tokens
+# contents_length = [len(article) for article in contents_ids]
+# max(contents_length)
+# np.quantile(contents_length, [0.25,0.5,0.75,0.99])
 
-# truncation_value = max(titles_lengths) # 50
+## truncate, pad and add special tokens
+titles_lengths = [len(item) for item in titles_ids]
+
+titles_lengths_quantiles = np.quantile(titles_lengths, [0.5,0.9,0.95]) 
+
+# truncation value is equivalent to 95% quantile
+# truncation_value = 20 
 # titles_text = []
 # titles_mask = []
 # for item in titles_ids:
 #     dict_values = tuple(bert_tokenizer.prepare_for_model(item,
 #                                         max_length=truncation_value,
+#                                         add_special_tokens=False,
 #                                         pad_to_max_length=True,
 #                                         return_attention_mask=True,
 #                                         return_token_type_ids=False).values())
@@ -42,28 +52,28 @@ with open(f"contents_ids{affix}.csv", newline='') as f:
 #     titles_mask.append(dict_values[1])
 
 # for contents
-truncation_value = 500
-contents_text = []
-contents_mask = []
-for item in contents_ids:
-    dict_values = tuple(bert_tokenizer.prepare_for_model(item,
-                                        max_length=truncation_value,
-                                        pad_to_max_length=True,
-                                        return_attention_mask=True,
-                                        return_token_type_ids=False).values())
-    contents_text.append(dict_values[0])
-    contents_mask.append(dict_values[1])
+# truncation_value = 500
+# contents_text = []
+# contents_mask = []
+# for item in contents_ids:
+#     dict_values = tuple(bert_tokenizer.prepare_for_model(item,
+#                                         max_length=truncation_value,
+#                                         pad_to_max_length=True,
+#                                         return_attention_mask=True,
+#                                         return_token_type_ids=False).values())
+#     contents_text.append(dict_values[0])
+#     contents_mask.append(dict_values[1])
 
 # convert to pytorch tensor
-# titles_text_tensor = torch.tensor(titles_text)
-# titles_mask_tensor = torch.tensor(titles_mask)
+titles_text_tensor = torch.tensor(titles_text)
+titles_mask_tensor = torch.tensor(titles_mask)
 
-contents_text_tensor = torch.tensor(contents_text)
-contents_mask_tensor = torch.tensor(contents_mask)
+# contents_text_tensor = torch.tensor(contents_text)
+# contents_mask_tensor = torch.tensor(contents_mask)
 
 # save tensors
-# torch.save(titles_text_tensor,'titles_text_tensor.pt')
-# torch.save(titles_mask_tensor,'titles_mask_tensor.pt')
+torch.save(titles_text_tensor,f'{affix}_titles_text_tensor.pt')
+torch.save(titles_mask_tensor,f'{affix}_titles_mask_tensor.pt')
 
-torch.save(contents_text_tensor,f'contents_text_tensor{affix}.pt')
-torch.save(contents_mask_tensor,f'contents_mask_tensor{affix}.pt')
+# torch.save(contents_text_tensor,f'{affix}_contents_text_tensor.pt')
+# torch.save(contents_mask_tensor,f'{affix}_contents_mask_tensor.pt')
