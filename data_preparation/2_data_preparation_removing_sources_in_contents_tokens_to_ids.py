@@ -1,15 +1,20 @@
-##### Removing sources in contents and converting tokens to ids #####
+########## Data preparation - converting tokens to ids ########## 
 import time
 import csv
 import transformers
 import os
 
-#############################################
-# Select option to remove sources from text #
-remove_source_from_text = False
-affix = 'allsides'
-#############################################
-os.chdir('/home/tobias/Documents/Studium/Master_thesis/programming/allsides')
+data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'allsides_data')
+os.chdir(data_path)
+
+### Select name of dataset to name files
+####################################################
+affix = 'allsides' # 'allsides_duplicates_removed' # 
+####################################################
+if (affix == 'allsides') | (affix == 'allsides_duplicates_removed'):
+    pass
+else:
+    raise AssertionError('affix should be \'allsides\' or \'allsides_duplicates_removed\'')
 
 # load tokenizer class
 tokenizer_class, pretrained_weights = (transformers.BertTokenizer, 'bert-base-uncased')
@@ -18,68 +23,29 @@ tokenizer_class, pretrained_weights = (transformers.BertTokenizer, 'bert-base-un
 bert_tokenizer = tokenizer_class.from_pretrained(pretrained_weights)
 
 ### reading tokenized files
-with open("titles_tokenized.csv", newline='') as f:
+# contents
+with open(f"{affix}_contents_tokenized.csv", newline='') as f: 
     csvread = csv.reader(f)
-    titles_tokenized = list(csvread)
+    contents_tokenized = list(csvread)
 
-# with open(f"{affix}_contents_tokenized.csv", newline='') as f: # 
+# titles (not used for thesis)
+# with open("titles_tokenized.csv", newline='') as f:
 #     csvread = csv.reader(f)
-#     contents_tokenized = list(csvread)
+#     titles_tokenized = list(csvread)
 
-# with open("sources_tokenized.csv", newline='') as f:
-#     csvread = csv.reader(f)
-#     sources_tokenized = list(csvread)
-
-
-if remove_source_from_text:
-    ### Removing sources from contents
-    # loop over text contents and coresponding news sources
-    for source,content in zip(sources_tokenized,contents_tokenized):
-        # loop over each token in content and give coresponding id
-        for i,token in enumerate(content):
-            # if - elif clauses checking if (token corresponds with first token 
-            # of source-tokens and is longer than 1)
-            # if not: check if only token corresponds with source-token
-            # in each case delete tokens, otherwise do nothing
-
-            # length >1
-            if (token == source[0]) and (len(source)>1) and (len(content)>len(content[:i+1])):
-                # length >2
-                if (len(source)>2) and (len(content)>len(content[:i+2])):
-                    # length >3
-                    if len(source)>3:
-                        # length >4
-                        if len(source)>4:
-                            del(content[i:i+len(source)])
-                        # length 4
-                        elif content[i:i+4] == source[:4]:
-                            del(content[i:i+4]) 
-                    # lenght 3
-                    elif content[i:i+3] == source[:3]:
-                        del(content[i:i+3])                
-                # length 2
-                elif (content[i+1] == source[1]) and (len(content)>len(content[:i+1])):
-                    del(content[i:i+2])
-            # length 1
-            elif (token == source[0]) and (len(content)>len(content[:i+1])):
-                del(content[i])
-
-    ### deleting sources
-    try:
-        del(sources_tokenized)
-    except NameError:
-        pass
 
 # convert tokens to ids
 titles_ids = [bert_tokenizer.convert_tokens_to_ids(item) for item in titles_tokenized]
 # contents_ids = [bert_tokenizer.convert_tokens_to_ids(item) for item in contents_tokenized]
 
-# write id files
-with open(f"{affix}_titles_ids.csv","w", newline='') as f:
+### write id files
+# contents
+with open(f"{affix}_contents_ids.csv","w", newline='') as f:
     wr = csv.writer(f)
-    wr.writerows(titles_ids)
+    wr.writerows(contents_ids)
 
-# with open(f"{affix}_contents_ids.csv","w", newline='') as f:
+# titles
+# with open(f"{affix}_titles_ids.csv","w", newline='') as f:
 #     wr = csv.writer(f)
-#     wr.writerows(contents_ids)
+#     wr.writerows(titles_ids)
 

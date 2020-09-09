@@ -1,12 +1,12 @@
-#################### Creating labels table #################### 
-
+#################### Select news sources #################### 
 import pandas as pd 
 import numpy as np
 import os
-os.getcwd()
-# os.chdir('/home/tobias/Documents/Studium/Master_thesis')
 
-labels = pd.read_csv('/home/tobias/Documents/Studium/Master_thesis/media_bias_literature/labels.csv')
+data_preparation_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(data_preparation_path)
+
+labels = pd.read_csv('labels.csv')
 
 labels.rename(columns={'Unnamed: 0': 'Source'}, inplace=True)
 
@@ -56,10 +56,10 @@ unwanted_columns = ['NewsGuard, Does not repeatedly publish false content',
 # 'BuzzFeed, leaning'
 labels_wanted = labels.drop(unwanted_columns, axis=1)
 
+# buzzfeed news source count
+num_buzzfeed_outlets = np.invert(pd.isna(labels_wanted['BuzzFeed, leaning'])).sum()
 
-num_buzzfeed_outlets = np.sum(labels_wanted['BuzzFeed, leaning']=='left') + np.sum(labels_wanted['BuzzFeed, leaning']=='right')
-
-##### Allsides Dataset ##################################################
+##### Allsides Dataset (chosen) ###############################################
 
 # labeled lean left
 allsides_lean_left = list(labels_wanted['Source']
@@ -91,12 +91,11 @@ num_allsides_outlets = len(allsides_bias_labels)
 # saving to csv
 allsides_sources_with_labels = pd.DataFrame({'Source': allsides_sources,
                                              'bias':allsides_bias_labels})
-#pd.set_option("display.max_rows",65)
 
-allsides_sources_with_labels.to_csv('allsides_bias_labels.csv', index=False)
+allsides_sources_with_labels.to_csv(os.path.join('allsides_data', 'allsides_bias_labels.csv'), index=False)
 
 
-##### Media Bias / Fact Check dataset #############################################
+##### MediaBias/FactCheck dataset (disrigarded) ###################################
 
 # labeled: least biased
 mbfc_least_biased = list(labels_wanted['Source']
@@ -143,61 +142,14 @@ num_mbfc_outlets = len(mbfc_bias_labels)
 
 mbfc_sources_with_labels = pd.DataFrame({'Source': mbfc_sources,
                                          'bias':mbfc_bias_labels})
-# removing unwanted sources 
-# News aggregators 
-news_aggregators = ['Drudge Report', 'Real Clear Politics', 'Yahoo News']
-tabloids = ['The Daily Mirror', 'The Daily Record', 'Birmingham Mail', 'The Daily Express',
-            'The Sun', 'Evening Standard', 'New York Daily News', 'New York Post']
-
-for unwanted_source in news_aggregators + tabloids:
-    mbfc_sources_with_labels = mbfc_sources_with_labels[mbfc_sources_with_labels['Source']!=unwanted_source] 
-mbfc_sources_with_labels.reset_index(drop=True, inplace=True)
-
-
-mbfc_sources = list(mbfc_sources_with_labels['Source'])
-
 # saving to csv
 mbfc_sources_with_labels.to_csv('mbfc_full/mbfc_full_for_counting_bias_labels.csv', index=False)
 
 
-###### Allsides out of sample testing dataset ##################################################
-
-buzzfeed_left = list(labels_wanted['Source'][labels_wanted['BuzzFeed, leaning']=='left'])
-buzzfeed_right = list(labels_wanted['Source'][labels_wanted['BuzzFeed, leaning']=='right'])
-
-all_mbfc = (mbfc_least_biased + mbfc_extreme_left + mbfc_extreme_right
-                            + mbfc_left_bias + mbfc_left_center_bias + mbfc_right_bias
-                            + mbfc_right_center_bias)
-
-all_mbfc_bias_labels = (len(mbfc_least_biased) * ['least_biased'] 
-                        + len(mbfc_extreme_left) * ['extreme_left'] 
-                        + len(mbfc_extreme_right) * ['extreme_right']
-                        + len(mbfc_left_bias) * ['left_bias'] 
-                        + len(mbfc_left_center_bias) * ['left_center_bias'] 
-                        + len(mbfc_right_bias) * ['right_bias']
-                        + len(mbfc_right_center_bias) * ['right_center_bias'])
-
-
-all_mbfc_not_in_allsides = [source for source in all_mbfc if source not in allsides_sources]
-
-all_mbfc_not_in_allsides_sources = []
-all_mbfc_not_in_allsides_labels = []
-for source,label in zip(all_mbfc,all_mbfc_bias_labels):
-    if source not in allsides_sources:
-        all_mbfc_not_in_allsides_sources.append(source)
-        all_mbfc_not_in_allsides_labels.append(label)
-
-all_mbfc_not_in_allsides_sources_with_labels = pd.DataFrame({'Source': all_mbfc_not_in_allsides_sources, 'bias': all_mbfc_not_in_allsides_labels})
-
-all_mbfc_not_in_allsides_sources_with_labels.to_csv('media_bias_fact_check_wo_allsides/mbfc_bias_labels.csv', index=False)
-
-# all_buzzfeed = buzzfeed_left + buzzfeed_right 
-# all_buzzfeed_not_in_allsides_mbfc = [source for source in all_buzzfeed if source not in allsides_sources+all_mbfc]
-
-#[source for source in all_buzzfeed_not_in_allsides_mbfc if source in buzzfeed_right]
-
-
-##### SQL commands ##################################################
+##### SQL commands ################################################################
+#############################################
+sql_sources = allsides_sources # mbfc_sources
+#############################################
 sql_string = 'DELETE FROM articles WHERE '
 for i,source in enumerate(mbfc_sources):
     if i != len(mbfc_sources) -1:
@@ -206,28 +158,3 @@ for i,source in enumerate(mbfc_sources):
         sql_string +='NOT source=' + "'" + source + "'"
 
 print(sql_string)
-
-# sql_string = ''
-# for source in right_checked:
-#     sql_string += 'source=' + "'" + source + "'" + ' OR '
-
-# sql_string = ''
-# for source in center_checked:
-#     sql_string += 'source=' + "'" + source + "'" + ' OR '
-# print(sql_string)
-
-allsides_sources = np.load('allsides/allsides_sources.npy', allow_pickle=True).flatten()
-
-
-np.sum(allsides_sources=='RightWingWatch')
-
-np.sum((allsides_sources=='Drudge Report') | (allsides_sources=='Real Clear Politics') | (allsides_sources=='Yahoo News')) 
-
-np.sum((allsides_sources=='New York Post') | (allsides_sources=='Daily Mail') | (allsides_sources=='New York Daily News'))
-
-
-
-
-
-
-
