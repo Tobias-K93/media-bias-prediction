@@ -1,0 +1,16 @@
+Authority_dictionary.txt
+Fairness_dictionary.txt
+folder_content.txt
+Graham et al (2009) PERSONALITY PROCESSES AND INDIVIDUAL DIFFERENCESLiberals and Conservatives Rely on Different Sets of Moral Foundations.pdf
+Harm_dictionary.txt
+Ingroup_dictionary.txt
+morality_words_from_Graham (2009).txt
+negative_strong_subjective_dictionary.txt
+negative_weak_subjective_dictionary.txt
+neutral_strong_subjective_dictionary.txt
+neutral_weak_subjective_dictionary.txt
+positive_strong_subjective_dictionary.txt
+positive_weak_subjective_dictionary.txt
+Purity_dictionary.txt
+subjclueslen1-HLTEMNLP05.README
+subjclueslen1-HLTEMNLP05.tff
