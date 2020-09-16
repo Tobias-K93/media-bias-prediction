@@ -18,14 +18,14 @@ os.chdir(os.path.join(repo_path,'non_deep_learning_model'))
 
 
 if affix=='semeval'
-    data = pd.read_csv('semeval_data.tsv',sep='\t', ######## change path
+    data = pd.read_csv(os.path.join(repo_path, 'sem_eval', 'semeval_data.tsv'),sep='\t', 
                            names=['hyperpartisan_label', 'unknown1', 'unknown2','content', 'title'])
 
     contents = list(data['content'])
     contents = [article.replace('<splt>', '') for article in contents]
     
     bias_array = np.array(data['hyperpartisan_label'])
-    np.save(f'non_dl_semeval_bias.npy', bias_array) ####### path
+    np.save(f'non_dl_semeval_bias.npy', bias_array) 
 
 elif affix == 'allsides_duplicates_removed':
     data = pd.read_csv(os.path.join(repo_path, 'data_preparation','allsides_data', f'{affix}_data_short.csv'))

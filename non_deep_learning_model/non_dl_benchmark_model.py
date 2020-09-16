@@ -87,7 +87,7 @@ y_test = y[test_ids]
 ### Setting up and training random forest
 cpus = multiprocessing.cpu_count()
 
-### hyper parameter search
+### hyper parameter search ####################################################################
 # parameters = {'n_estimators': [300, 500],
 #               'max_depth': [None,20,30,40,50,70],
 #               'min_samples_split': [2,6,10,20],
@@ -148,8 +148,7 @@ cpus = multiprocessing.cpu_count()
 # grid_search_results
 
 # grid_search_results.sort_values('val_f1')
-
-#####################################################################################
+###############################################################################################
 
 results_columns = [dataset + '_' + metric for dataset in ['Train', 'Val', 'Test'] 
                                           for metric in ['Acc', 'F1', 'MSE', 'Precision', 'Recall']] + ['Time', 'Memory']
