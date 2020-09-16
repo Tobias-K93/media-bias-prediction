@@ -13,7 +13,7 @@ os.chdir(data_path)
 
 ### Select name of dataset to name files
 ####################################################
-affix = 'allsides' # 'allsides_duplicates_removed' # 
+affix = 'allsisdes' # 'allsides_duplicates_removed' # 
 ####################################################
 
 if (affix == 'allsides') | (affix == 'allsides_duplicates_removed'):
@@ -46,6 +46,7 @@ for item in contents_ids:
     contents_text.append(dict_values[0])
     contents_mask.append(dict_values[1])
 
+# convert to pytorch tensor
 contents_text_tensor = torch.tensor(contents_text)
 contents_mask_tensor = torch.tensor(contents_mask)
 

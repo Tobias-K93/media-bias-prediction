@@ -22,10 +22,6 @@ affix = 'allsides' # 'mbfc' ###
 # (mbfc only used for dataset comparison statistics, 
 #  not used for model training)
 
-# set path to data directory and make it working directory
-data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),f'{affix}_data')
-os.chdir(data_path)
-
 # Respective dictionaries to convert bias labels from strings to ints
 if affix == 'allsides':
     bias_dict = {'Left': 0, 'Lean Left': 1, 'Center': 2, 'Lean Right': 3, 'Right': 4}
@@ -35,6 +31,10 @@ elif affix == 'mbfc':
                 'extreme_right': 6}
 else:
     raise AssertionError('affix should be \'allsides\' or \'mbfc\'')
+
+# set path to data directory and make it working directory
+data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),f'{affix}_data')
+os.chdir(data_path)
 
 # load data
 data = pd.read_csv(f'{affix}_articles.csv')
