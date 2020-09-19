@@ -12,7 +12,7 @@ from nltk.tokenize import sent_tokenize
 
 ### Choose whether frequent sentences should be removed 
 #######################################################
-removing_duplicate_sentences = True  ###
+removing_duplicate_sentences = False  ###
 ########################################
 
 ### Select name of dataset to name files
@@ -43,6 +43,9 @@ data = pd.read_csv(f'{affix}_articles.csv')
 bias_source_matching = pd.read_csv(f'{affix}_bias_labels.csv', header=0, names=['source', 'bias'])
 
 data = data.merge(bias_source_matching)
+
+if affix=='mbfc':
+    np.save('mbfc_bias_array.npy', np.array(data['bias']))
 
 # create lists of titles and contents
 titles = list(data['name'])

@@ -9,7 +9,7 @@ semeval_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(semeval_path)
 
 ### Loading SemEval 2019 data
-semeval_data = pd.read_csv('train.text.tsv',sep='\t', 
+semeval_data = pd.read_csv('semeval_data.tsv',sep='\t', 
                            names=['hyperpartisan_label', 'unknown1', 'unknown2','content', 'title'])
 
 
