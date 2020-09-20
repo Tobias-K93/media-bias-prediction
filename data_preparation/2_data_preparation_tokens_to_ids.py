@@ -34,17 +34,20 @@ with open(f"{affix}_contents_tokenized.csv", newline='') as f:
 #     titles_tokenized = list(csvread)
 
 
+### contents
 # convert tokens to ids
-titles_ids = [bert_tokenizer.convert_tokens_to_ids(item) for item in titles_tokenized]
-# contents_ids = [bert_tokenizer.convert_tokens_to_ids(item) for item in contents_tokenized]
+contents_ids = [bert_tokenizer.convert_tokens_to_ids(item) for item in contents_tokenized]
 
-### write id files
-# contents
+# write ids to file
 with open(f"{affix}_contents_ids.csv","w", newline='') as f:
     wr = csv.writer(f)
     wr.writerows(contents_ids)
 
-# titles
+### titles
+# # convert tokens to ids
+# titles_ids = [bert_tokenizer.convert_tokens_to_ids(item) for item in titles_tokenized]
+
+# # write ids to file
 # with open(f"{affix}_titles_ids.csv","w", newline='') as f:
 #     wr = csv.writer(f)
 #     wr.writerows(titles_ids)

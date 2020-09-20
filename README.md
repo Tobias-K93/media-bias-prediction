@@ -1,5 +1,5 @@
 # Predicting media bias of news articles using deep-learning
-This repository provides the code I produced for my master thesis with the same title. Necessary packages are stated in the dependency file. In the following, all steps needed to make use of it and to reproduce results are explained. 
+This repository provides the code I produced for my master thesis with the same title. Necessary packages are stated in the dependencies file. In the following, all steps needed to make use of it and to reproduce results are explained. 
 
 ## Data preparation
 First the NELA-GT-2018 dataset needs to be downloaded from https://doi.org/10.7910/DVN/ULHLCB, specifically the `articles.db` and `labels.csv` files. `labels.csv` needs to be moved to the `data_preparation` directory (done already). 
@@ -28,8 +28,7 @@ The SemEval dataset was downloaded from https://doi.org/10.5281/zenodo.1489920, 
 
 To create all semeval related results, except for the RF predictions explained above, apply the `semeval_results_notebook.ipynb` and (similar to the BERT notebook) select model type and model weights at the beginning of the notebook and run it once for each constellation. 
 
-## LIME and removing  groups of sources from training 
-## (other notebooks)
+## LIME and removing  groups of sources from training (other notebooks)
 The `lime_notebook.ipynb` in the `other_notebooks` directory creates LIME estimations (https://github.com/marcotcr/lime) of articles, plots them and saves the html texts to file. To choose a specific article select the desired index under the "Selecting article" section of the notebook. Potentially the name of the weights-file needs to be adjusted under "loading weights" to the chosen name during training of BERT. 
 
 The `removed_source_groups_from_training.ipynb` notebook creates prediction results where two groups of sources (one large, one small regarding frequency of articles) with one source per political bias category were removed from the training set. The corresponding model weights are produced with the `bert_model` notebook before and then applied in this notebook. As a result prediction metrics for both groups are given once with each of them included and once excluded from training. No additional parameters need to be adjusted. 

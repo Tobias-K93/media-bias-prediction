@@ -13,7 +13,8 @@ os.chdir(os.path.join(repo_path, 'data_preparation'))
 allsides_bias_tensor = torch.load(os.path.join('allsides_data', 'allsides_bias_tensor.pt'))
 allsides_bias_array = allsides_bias_tensor.numpy()
 
-mbfc_bias_array = np.load(os.path.join('mbfc_data', 'mbfc_bias_array.npy'), allow_pickle=True)
+mbfc_bias_tensor = torch.load(os.path.join('mbfc_data', 'mbfc_bias_tensor.pt'))
+mbfc_bias_array = mbfc_bias_tensor.numpy()
 
 allsides_palette = {'Left': 'blue', 'Lean Left': 'slateblue', 'Center': 'grey', 
                     'Lean Right': 'indianred', 'Right': 'red'}

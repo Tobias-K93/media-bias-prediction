@@ -44,9 +44,6 @@ bias_source_matching = pd.read_csv(f'{affix}_bias_labels.csv', header=0, names=[
 
 data = data.merge(bias_source_matching)
 
-if affix=='mbfc':
-    np.save('mbfc_bias_array.npy', np.array(data['bias']))
-
 # create lists of titles and contents
 titles = list(data['name'])
 contents = list(data['content'])
@@ -56,8 +53,6 @@ titles_nans_id = [i for i,item in enumerate(titles) if pd.isna(item)]
 
 # ID's of entries without content (218)
 contents_nans_id = [i for i,item in enumerate(contents) if pd.isna(item)]
-# Sources of articles without content and the corresponding frequencies
-# np.unique(data['source'].iloc[contents_nans_id], return_counts=True)
 
 # removing entries with nans 
 nans_id = list(set(titles_nans_id+contents_nans_id))

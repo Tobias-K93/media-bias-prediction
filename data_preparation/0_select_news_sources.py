@@ -95,7 +95,7 @@ allsides_sources_with_labels = pd.DataFrame({'Source': allsides_sources,
 allsides_sources_with_labels.to_csv(os.path.join('allsides_data', 'allsides_bias_labels.csv'), index=False)
 
 
-##### MediaBias/FactCheck dataset (disrigarded) ###################################
+##### MediaBias/FactCheck dataset (disregarded) ###################################
 
 # labeled: least biased
 mbfc_least_biased = list(labels_wanted['Source']
